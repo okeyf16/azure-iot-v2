@@ -65,7 +65,7 @@ module "iothub" {
 ###############################
 module "sa_data" {
   source               = "./modules/storage"
-  storage_account_name = local.storage_account_data_name
+  account_name         = local.storage_account_data_name
   table_name           = local.table_name
   resource_group_name  = module.resource_group.name
   location             = module.resource_group.location
