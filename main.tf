@@ -60,12 +60,12 @@ module "iothub" {
   name                = local.iothub_name
   resource_group_name = module.rg.name
   location            = module.rg.location
-
+  namespace_name            = local.iothub_name
   endpoint_name             = local.eh_endpoint_name
   route_name                = local.eh_route_name
   eh_send_connection_string = module.eventhub.send_connection_string
   eventhub_connection_string = module.eventhub.send_connection_string
-  eventhub_name              = local.eh_name
+  eventhub_name              = local.eh_name [cite: 6]
   depends_on = [module.eventhub]
 }
 
