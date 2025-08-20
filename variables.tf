@@ -26,3 +26,61 @@ variable "location" {
   default     = "North Europe"
 }
 
+variable "resource_group_name" {
+  type    = string
+  default = "iot-gen-ehub"
+}
+
+
+variable "tags" {
+  type = map(string)
+  default = {
+    project = "iot-ehub-func"
+  }
+}
+
+variable "iothub_name" {
+  type    = string
+  default = "hub30906"
+}
+
+variable "eh_endpoint_name" {
+  type    = string
+  default = "eh-endpoint"
+}
+
+variable "eh_route_name" {
+  type    = string
+  default = "route-device-msgs"
+}
+
+variable "eventhub_namespace_name" {
+  type    = string
+  default = "ehns-iot-basic"
+}
+
+variable "eventhub_name" {
+  type    = string
+  default = "telemetry"
+}
+
+variable "storage_account_data_name" {
+  type    = string
+  default = "sttelemetrydata123" # Must be globally unique
+}
+
+variable "storage_account_func_name" {
+  type    = string
+  default = "stfuncstoragedev123" # Must be globally unique
+}
+
+variable "table_name" {
+  type    = string
+  default = "telemetry"
+}
+
+variable "function_app_name" {
+  type    = string
+  default = "fn-iot-ehub"
+}
+
