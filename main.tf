@@ -1,96 +1,133 @@
+terraform {
+  required_version = ">= 1.6.0"
+
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "~> 3.109.0"
+    }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.6"
+    }
+  }
+}
+
+provider "azurerm" {
+  features {}
+}
+
+#####################
+# Locals for Naming #
+#####################
 locals {
-  rg_name            = "iot-gen-ehub"
-  sa_data_name       = "sa30906"
-  sa_func_name       = "safunc30906"
-  table_names        = ["random"]
-
-  eh_namespace_name  = "ehub30906"
-  eh_name            = "ehub1"
-  eh_tu              = 1
-  eh_partitions      = 2
-  eh_retention_days  = 1
-  eh_consumer_group  = "func"
-
-  iothub_name        = "hub30906"
-  eh_endpoint_name   = "eh-endpoint"
-  eh_route_name      = "route-to-eh"
-
-  func_name          = "func-ehub30906"
-  log_analytics_name = "log-ehub30906"
-  appi_name          = "appi-ehub30906"
+  resource_group_name       = var.resource_group_name
+  location                  = var.location
+  iothub_name               = var.iothub_name
+  eventhub_namespace_name   = var.eventhub_namespace_name
+  eventhub_name             = var.eventhub_name
+  storage_account_data_name = var.storage_account_data_name
+  storage_account_func_name = var.storage_account_func_name
+  table_name                = var.table_name
+  function_app_name         = var.function_app_name
+  eh_endpoint_name          = var.eh_endpoint_name
+  eh_route_name             = var.eh_route_name
+  tags                      = var.tags
 }
 
-module "rg" {
-  source   = "./modules/resource_group"
-  name     = local.rg_name
-  location = var.location
+######################
+# Resource Group     #
+######################
+module "resource_group" {
+  source = "./modules/resource_group"
+
+  name     = local.resource_group_name
+  location = local.location
+  tags     = local.tags
 }
 
-module "sa_data" {
-  source              = "./modules/storage"
-  account_name        = local.sa_data_name
-  resource_group_name = module.rg.name
-  location            = module.rg.location
-  tables              = local.table_names
-}
-
-module "sa_func" {
-  source              = "./modules/storage"
-  account_name        = local.sa_func_name
-  resource_group_name = module.rg.name
-  location            = module.rg.location
-  tables              = []
-}
-
+######################
+# Event Hub          #
+######################
 module "eventhub" {
   source              = "./modules/eventhub"
-  resource_group_name = module.rg.name
-  location            = module.rg.location
-
-  namespace_name   = local.eh_namespace_name
-  eventhub_name    = local.eh_name
-  throughput_units = local.eh_tu
-  partitions       = local.eh_partitions
-  retention_days   = local.eh_retention_days
-  consumer_group   = local.eh_consumer_group
+  namespace_name      = local.eventhub_namespace_name
+  eventhub_name       = local.eventhub_name
+  resource_group_name = module.resource_group.name
+  location            = module.resource_group.location
+  tags                = local.tags
 }
 
+######################
+# IoT Hub + Routing  #
+######################
 module "iothub" {
   source              = "./modules/iothub"
   name                = local.iothub_name
-  resource_group_name = module.rg.name
-  location            = module.rg.location
-  namespace_name            = local.iothub_name
-  endpoint_name             = local.eh_endpoint_name
-  route_name                = local.eh_route_name
-  eh_send_connection_string = module.eventhub.send_connection_string
-  eventhub_name              = local.eh_name
+  resource_group_name = module.resource_group.name
+  location            = module.resource_group.location
+  tags                = local.tags
+
+  eh_endpoint_name          = local.eh_endpoint_name
+  eh_route_name             = local.eh_route_name
+  eventhub_send_conn_string = module.eventhub.send_connection_string
+  route_source              = "DeviceMessages"
+  route_condition           = "true"
+
   depends_on = [module.eventhub]
 }
 
+###############################
+# Storage Account for App Data
+###############################
+module "sa_data" {
+  source               = "./modules/storage"
+  storage_account_name = local.storage_account_data_name
+  table_name           = local.table_name
+  resource_group_name  = module.resource_group.name
+  location             = module.resource_group.location
+  tags                 = local.tags
+}
+
+##########################################
+# Storage Account for Function Runtime
+##########################################
+module "sa_func" {
+  source               = "./modules/storage"
+  storage_account_name = local.storage_account_func_name
+  table_name           = "unused"  # You can skip table creation internally with conditionals
+  resource_group_name  = module.resource_group.name
+  location             = module.resource_group.location
+  tags                 = local.tags
+}
+
+######################
+# Azure Function App #
+######################
 module "function_app" {
-  source              = "./modules/function_app"
-  name                = local.func_name
-  resource_group_name = module.rg.name
-  location            = module.rg.location
+  source                         = "./modules/function_app"
+  name                           = local.function_app_name
+  resource_group_name            = module.resource_group.name
+  location                       = module.resource_group.location
 
-  runtime_storage_account_name       = module.sa_func.name
-  runtime_storage_account_key        = module.sa_func.primary_access_key
-  runtime_storage_connection_string  = module.sa_func.primary_connection_string
+  # Runtime
+  storage_account_name           = module.sa_func.name
+  storage_account_access_key     = module.sa_func.primary_access_key
 
-  eh_listen_connection_string = module.eventhub.listen_connection_string
-  eventhub_name               = module.eventhub.eventhub_name
-  eh_consumer_group           = module.eventhub.consumer_group
+  # Event Hub trigger
+  eventhub_listen_conn_string    = module.eventhub.listen_connection_string
+  eventhub_name                  = local.eventhub_name
 
-  data_storage_account_id = module.sa_data.id
+  # Output destination (Table Storage)
+  table_name                     = local.table_name
+  storage_account_id             = module.sa_data.id
 
-  log_analytics_name = local.log_analytics_name
-  app_insights_name  = local.appi_name
+  tags = local.tags
 
   depends_on = [
     module.iothub,
-    module.sa_data,
     module.sa_func,
+    module.sa_data,
     module.eventhub
   ]
 }
