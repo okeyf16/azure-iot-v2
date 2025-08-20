@@ -69,7 +69,6 @@ module "sa_data" {
   table_name           = local.table_name
   resource_group_name  = module.resource_group.name
   location             = module.resource_group.location
-  tags                 = local.tags
 }
 
 ##########################################
@@ -77,11 +76,10 @@ module "sa_data" {
 ##########################################
 module "sa_func" {
   source               = "./modules/storage"
-  storage_account_name = local.storage_account_func_name
+  account_name         = local.storage_account_func_name
   table_name           = "unused"  # You can skip table creation internally with conditionals
   resource_group_name  = module.resource_group.name
   location             = module.resource_group.location
-  tags                 = local.tags
 }
 
 ######################
