@@ -1,59 +1,43 @@
 variable "name" {
-  type        = string
-  description = "Name of the IoT Hub"
+  type = string
+  description = "IoT Hub name"
 }
 
 variable "resource_group_name" {
-  type        = string
-  description = "Resource group in which to create the IoT Hub"
+  type = string
+  description = "Resource group for IoT Hub"
 }
 
 variable "location" {
-  type        = string
-  description = "Azure region for IoT Hub"
+  type = string
+  description = "Region"
 }
 
 variable "tags" {
-  type        = map(string)
-  default     = {}
-  description = "Optional tags"
+  type = map(string)
+  default = {}
 }
 
-# Event Hub endpoint config
+# Event Hub routing details
 variable "endpoint_name" {
-  type        = string
-  description = "Name of the Event Hub endpoint within IoT Hub"
+  type = string
 }
 
 variable "route_name" {
-  type        = string
-  description = "Name of the route in IoT Hub"
-}
-
-variable "namespace_name" {
-  type        = string
-  description = "Event Hub namespace name"
-}
-
-variable "eventhub_name" {
-  type        = string
-  description = "Event Hub name"
+  type = string
 }
 
 variable "eh_send_connection_string" {
   type        = string
   sensitive   = true
-  description = "Event Hub send policy connection string including EntityPath"
 }
 
 variable "route_source" {
-  type        = string
-  default     = "DeviceMessages"
-  description = "Source of the messages in IoT Hub routing (e.g., DeviceMessages)"
+  type    = string
+  default = "DeviceMessages"
 }
 
 variable "route_condition" {
-  type        = string
-  default     = "true"
-  description = "Condition for the route (optional expression)"
+  type    = string
+  default = "true"
 }
