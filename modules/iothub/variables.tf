@@ -54,6 +54,22 @@ variable "consumer_group"      {
   default = "func" 
 }
 
+variable "name" {
+  type = string
+}
+
+variable "endpoint_name" {
+  type = string
+}
+
+variable "route_name" {
+  type = string
+}
+
+variable "eh_send_connection_string" {
+  type = string
+}
+
 
 
 
