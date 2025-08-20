@@ -19,12 +19,12 @@ variable "eventhub_name"       {
 }
 
 variable "eh_endpoint_name" {
-  description = "eh-endpoint"
+  description = "The name for the IoT Hub Event Hub endpoint."
   type        = string
 }
 
 variable "eh_route_name" {
-  description = "route-to-eh" 
+  description = "The name for the IoT Hub route." 
   type        = string
 }
 
@@ -65,6 +65,7 @@ variable "endpoint_name" {
 variable "route_name" {
   type = string
 }
+
 
 
 
