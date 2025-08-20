@@ -65,7 +65,7 @@ module "iothub" {
   route_name                = local.eh_route_name
   eh_send_connection_string = module.eventhub.send_connection_string
   eventhub_connection_string = module.eventhub.send_connection_string
-  eventhub_name              = local.eh_name [cite: 6]
+  eventhub_name              = local.eh_name
   depends_on = [module.eventhub]
 }
 
