@@ -50,8 +50,6 @@ module "iothub" {
 
   endpoint_name             = local.eh_endpoint_name
   route_name                = local.eh_route_name
-  namespace_name            = local.eventhub_namespace_name
-  eventhub_name             = local.eventhub_name
   eh_send_connection_string = module.eventhub.send_connection_string
   route_source              = "DeviceMessages"
   route_condition           = "true"
