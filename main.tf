@@ -95,4 +95,3 @@ module "function_app" {
     module.eventhub
   ]
 }
-
