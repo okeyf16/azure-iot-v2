@@ -41,3 +41,12 @@ resource "azurerm_eventhub_authorization_rule" "listener" {
   send                = false
   manage              = false
 }
+
+resource "azurerm_iothub_endpoint_eventhub" "eh_endpoint" {
+  name                = "eh-endpoint"
+  resource_group_name = var.resource_group_name
+  iothub_name         = azurerm_iothub.iothub.name
+  # Reference the variable here
+  connection_string   = var.eventhub_connection_string 
+  container_name      = var.eventhub_name
+}
