@@ -66,9 +66,7 @@ variable "route_name" {
   type = string
 }
 
-variable "eh_send_connection_string" {
-  type = string
-}
+
 
 
 
