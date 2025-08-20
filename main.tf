@@ -50,14 +50,17 @@ module "iothub" {
   location            = module.resource_group.location
   tags                = local.tags
 
-  eh_endpoint_name          = local.eh_endpoint_name
-  eh_route_name             = local.eh_route_name
-  eventhub_send_conn_string = module.eventhub.send_connection_string
+  endpoint_name             = local.eh_endpoint_name
+  route_name                = local.eh_route_name
+  namespace_name            = local.eventhub_namespace_name
+  eventhub_name             = local.eventhub_name
+  eh_send_connection_string = module.eventhub.send_connection_string
   route_source              = "DeviceMessages"
   route_condition           = "true"
 
   depends_on = [module.eventhub]
 }
+
 
 ###############################
 # Storage Account for App Data
