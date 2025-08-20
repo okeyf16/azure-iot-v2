@@ -3,23 +3,17 @@ resource "azurerm_service_plan" "plan" {
   location            = var.location
   resource_group_name = var.resource_group_name
   os_type             = "Linux"
-  sku_name            = "Y1"
+  sku_name            = "Y1" # Consumption
+
+  tags = var.tags
 }
 
-resource "azurerm_log_analytics_workspace" "law" {
-  name                = var.log_analytics_name
-  location            = var.location
-  resource_group_name = var.resource_group_name
-  sku                 = "PerGB2018"
-  retention_in_days   = 30
-}
-
-resource "azurerm_application_insights" "appi" {
-  name                = var.app_insights_name
+resource "azurerm_application_insights" "ai" {
+  name                = "${var.name}-ai"
   location            = var.location
   resource_group_name = var.resource_group_name
   application_type    = "web"
-  workspace_id        = azurerm_log_analytics_workspace.law.id
+  tags                = var.tags
 }
 
 resource "azurerm_linux_function_app" "func" {
@@ -27,32 +21,51 @@ resource "azurerm_linux_function_app" "func" {
   location                   = var.location
   resource_group_name        = var.resource_group_name
   service_plan_id            = azurerm_service_plan.plan.id
+  storage_account_name       = var.storage_account_name
+  storage_account_access_key = var.storage_account_access_key
 
-  storage_account_name       = var.runtime_storage_account_name
-  storage_account_access_key = var.runtime_storage_account_key
-
-  identity { type = "SystemAssigned" }
-
-  functions_extension_version = "~4"
+  identity {
+    type = "SystemAssigned"
+  }
 
   site_config {
     application_stack {
-      python_version = "3.10"
+      node_version = 18
     }
+
+    ftps_state          = "Disabled"
+    minimum_tls_version = "1.2"
   }
 
   app_settings = {
-    FUNCTIONS_WORKER_RUNTIME              = "python"
-    AzureWebJobsStorage                   = var.runtime_storage_connection_string
-    APPLICATIONINSIGHTS_CONNECTION_STRING = azurerm_application_insights.appi.connection_string
-    EVENTHUB_CONNECTION                   = var.eh_listen_connection_string
-    EVENTHUB_NAME                         = var.eventhub_name
-    EVENTHUB_CONSUMER_GROUP               = var.eh_consumer_group
+    FUNCTIONS_WORKER_RUNTIME         = "node"
+    FUNCTIONS_EXTENSION_VERSION      = "~4"
+    WEBSITE_RUN_FROM_PACKAGE         = "1"
+
+    # Bindings
+    EventHubConnection               = var.eventhub_listen_conn_string
+    EVENT_HUB_NAME                   = var.eventhub_name
+
+    # Storage
+    TABLE_NAME                       = var.table_name
+
+    # App Insights
+    APPINSIGHTS_INSTRUMENTATIONKEY       = azurerm_application_insights.ai.instrumentation_key
+    APPLICATIONINSIGHTS_CONNECTION_STRING = azurerm_application_insights.ai.connection_string
   }
+
+  tags = var.tags
 }
 
-resource "azurerm_role_assignment" "table_rbac" {
-  scope                = var.data_storage_account_id
-  role_definition_name = "Storage Table Data Contributor"
-  principal_id         = azurerm_linux_function_app.func.identity[0].principal_id
+# Allow MSI to write to Table Storage (sa_data)
+data "azurerm_role_definition" "table_data_contrib" {
+  name  = "Storage Table Data Contributor"
+  scope = var.storage_account_id
+}
+
+resource "azurerm_role_assignment" "table_access" {
+  principal_id       = azurerm_linux_function_app.func.identity[0].principal_id
+  role_definition_id = data.azurerm_role_definition.table_data_contrib.id
+  scope              = var.storage_account_id
+  skip_service_principal_aad_check = true
 }
