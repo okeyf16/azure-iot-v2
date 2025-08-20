@@ -66,7 +66,6 @@ module "iothub" {
 module "sa_data" {
   source               = "./modules/storage"
   account_name         = local.storage_account_data_name
-  table_name           = local.table_name
   resource_group_name  = module.resource_group.name
   location             = module.resource_group.location
 }
@@ -77,7 +76,6 @@ module "sa_data" {
 module "sa_func" {
   source               = "./modules/storage"
   account_name         = local.storage_account_func_name
-  table_name           = "unused"  # You can skip table creation internally with conditionals
   resource_group_name  = module.resource_group.name
   location             = module.resource_group.location
 }
