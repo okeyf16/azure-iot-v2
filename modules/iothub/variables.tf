@@ -1,30 +1,30 @@
 variable "resource_group_name" {
-  description = local.rg_name
+  description = "iot-gen-ehub"
   type = string
 }
 
 variable "location"            {
-  description = var.location
+  description = "North Europe"
   type = string
 }
 
 variable "namespace_name"      {
-  description = local.eh_namespace_name
+  description = "ehub30906"
   type = string
 }
 
 variable "eventhub_name"       {
-  description = local.eh_name
+  description = "ehub1"
   type = string
 }
 
 variable "eh_endpoint_name" {
-  description = local.eh_endpoint_name
+  description = "eh-endpoint"
   type        = string
 }
 
 variable "eh_route_name" {
-  description = local.eh_route_name 
+  description = "route-to-eh" 
   type        = string
 }
 
@@ -53,5 +53,6 @@ variable "consumer_group"      {
   type = string
   default = "func" 
 }
+
 
 
