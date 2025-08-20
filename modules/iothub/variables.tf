@@ -1,74 +1,59 @@
-variable "resource_group_name" {
-  description = "iot-gen-ehub"
-  type = string
-}
-
-variable "location"            {
-  description = "North Europe"
-  type = string
-}
-
-variable "namespace_name"      {
-  description = "ehub30906"
-  type = string
-}
-
-variable "eventhub_name"       {
-  description = "ehub1"
-  type = string
-}
-
-variable "eh_endpoint_name" {
-  description = "The name for the IoT Hub Event Hub endpoint."
-  type        = string
-}
-
-variable "eh_route_name" {
-  description = "The name for the IoT Hub route." 
-  type        = string
-}
-
-variable "eh_send_connection_string" {
-  description = "The connection string for the Event Hub endpoint."
-  type        = string
-  sensitive   = true
-}
-
-variable "throughput_units"    {
-  type = number
-  default = 1 
-}
-
-variable "partitions"          {
-  type = number
-  default = 2
-}
-
-variable "retention_days"      {
-  type = number
-  default = 1 
-}
-
-variable "consumer_group"      {
-  type = string
-  default = "func" 
-}
-
 variable "name" {
-  type = string
+  type        = string
+  description = "Name of the IoT Hub"
 }
 
+variable "resource_group_name" {
+  type        = string
+  description = "Resource group in which to create the IoT Hub"
+}
+
+variable "location" {
+  type        = string
+  description = "Azure region for IoT Hub"
+}
+
+variable "tags" {
+  type        = map(string)
+  default     = {}
+  description = "Optional tags"
+}
+
+# Event Hub endpoint config
 variable "endpoint_name" {
-  type = string
+  type        = string
+  description = "Name of the Event Hub endpoint within IoT Hub"
 }
 
 variable "route_name" {
-  type = string
+  type        = string
+  description = "Name of the route in IoT Hub"
 }
 
+variable "namespace_name" {
+  type        = string
+  description = "Event Hub namespace name"
+}
 
+variable "eventhub_name" {
+  type        = string
+  description = "Event Hub name"
+}
 
+variable "eh_send_connection_string" {
+  type        = string
+  sensitive   = true
+  description = "Event Hub send policy connection string including EntityPath"
+}
 
+variable "route_source" {
+  type        = string
+  default     = "DeviceMessages"
+  description = "Source of the messages in IoT Hub routing (e.g., DeviceMessages)"
+}
 
-
-
+variable "route_condition" {
+  type        = string
+  default     = "true"
+  description = "Condition for the route (optional expression)"
+}
