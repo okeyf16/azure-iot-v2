@@ -1,52 +1,33 @@
-resource "azurerm_eventhub_namespace" "ns" {
-  name                = var.namespace_name
-  resource_group_name = var.resource_group_name
+# IoT Hub
+resource "azurerm_iothub" "this" {
+  name                = var.name
   location            = var.location
-  sku                 = "Basic"
-  capacity            = var.throughput_units
-  auto_inflate_enabled = false
-}
-
-resource "azurerm_eventhub" "eh" {
-  name                = var.eventhub_name
-  namespace_name      = azurerm_eventhub_namespace.ns.name
   resource_group_name = var.resource_group_name
-  partition_count     = var.partitions
-  message_retention   = var.retention_days
+
+  sku {
+    name     = "F1"
+    capacity = 1
+  }
+
+  tags = var.tags
 }
 
-resource "azurerm_eventhub_consumer_group" "cg" {
-  name                = var.consumer_group
-  eventhub_name       = azurerm_eventhub.eh.name
-  namespace_name      = azurerm_eventhub_namespace.ns.name
-  resource_group_name = var.resource_group_name
-}
-
-resource "azurerm_eventhub_authorization_rule" "sender" {
-  name                = "sender"
-  eventhub_name       = azurerm_eventhub.eh.name
-  namespace_name      = azurerm_eventhub_namespace.ns.name
-  resource_group_name = var.resource_group_name
-  listen              = false
-  send                = true
-  manage              = false
-}
-
-resource "azurerm_eventhub_authorization_rule" "listener" {
-  name                = "listener"
-  eventhub_name       = azurerm_eventhub.eh.name
-  namespace_name      = azurerm_eventhub_namespace.ns.name
-  resource_group_name = var.resource_group_name
-  listen              = true
-  send                = false
-  manage              = false
-}
-
+# Event Hub custom endpoint for routing
 resource "azurerm_iothub_endpoint_eventhub" "eh_endpoint" {
-  name                = "eh-endpoint"
+  name                = var.endpoint_name
+  iothub_name         = azurerm_iothub.this.name
   resource_group_name = var.resource_group_name
-  iothub_name         = azurerm_iothub.iothub.name
-  # Reference the variable here
-  connection_string   = var.eventhub_connection_string 
-  container_name      = var.eventhub_name
+  connection_string   = var.eh_send_connection_string
+}
+
+# IoT Hub route to Event Hub endpoint
+resource "azurerm_iothub_route" "eh_route" {
+  name                = var.route_name
+  iothub_name         = azurerm_iothub.this.name
+  resource_group_name = var.resource_group_name
+
+  source              = var.route_source
+  condition           = var.route_condition
+  endpoint_names      = [azurerm_iothub_endpoint_eventhub.eh_endpoint.name]
+  enabled             = true
 }
