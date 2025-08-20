@@ -4,6 +4,12 @@ variable "ARM_CLIENT_ID" {
   sensitive   = true
 }
 
+variable "ARM_CLIENT_SECRET" {
+  type        = string
+  description = "gMM8Q~abXIt33zBccRW0rQ~EnEO7d~h8jvPwpahJ"
+  sensitive   = true 
+}
+
 variable "ARM_SUBSCRIPTION_ID" {
   type        = string
   description = "9112a04a-6011-49f2-904c-f2b66b865b40"
