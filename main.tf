@@ -36,7 +36,6 @@ module "eventhub" {
   eventhub_name       = local.eventhub_name
   resource_group_name = module.resource_group.name
   location            = module.resource_group.location
-  tags                = local.tags
 }
 
 ######################
