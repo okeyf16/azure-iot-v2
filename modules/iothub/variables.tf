@@ -29,7 +29,7 @@ variable "eh_route_name" {
 }
 
 variable "eh_send_connection_string" {
-  description = module.eventhub.send_connection_string
+  description = "The connection string for the Event Hub endpoint."
   type        = string
   sensitive   = true
 }
@@ -53,6 +53,7 @@ variable "consumer_group"      {
   type = string
   default = "func" 
 }
+
 
 
 
