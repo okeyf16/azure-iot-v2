@@ -48,5 +48,10 @@ variable "tags" {
   description = "Tags for resources"
 }
 
+variable "app_insights_name" {
+  type        = string
+  description = "Name of the Application Insights instance"
+}
+
 
 
