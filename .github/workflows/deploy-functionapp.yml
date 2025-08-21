@@ -52,3 +52,4 @@ jobs:
           --resource-group $AZURE_RESOURCE_GROUP \
           --name $AZURE_FUNCTIONAPP_NAME \
           --src functionapp.zip
+
