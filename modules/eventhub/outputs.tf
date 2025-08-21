@@ -2,4 +2,4 @@ output "send_connection_string"   { value = azurerm_eventhub_authorization_rule.
 output "listen_connection_string" { value = azurerm_eventhub_authorization_rule.listener.primary_connection_string }
 output "eventhub_name"            { value = azurerm_eventhub.eh.name }
 output "namespace_name"           { value = azurerm_eventhub_namespace.ns.name }
-output "consumer_group"           { value = azurerm_eventhub_consumer_group.cg.name }
+
