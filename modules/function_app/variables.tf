@@ -46,7 +46,7 @@ variable "log_analytics_workspace_id" {
 variable "tags" {
   type    = map(string)
   description = "Tags for resources"
-  default = {}
 }
+
 
 
