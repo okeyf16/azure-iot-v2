@@ -29,11 +29,13 @@ variable "eventhub_name" {
 }
 
 variable "table_name" {
-  type = string
+  type        = string
+  description = "Name of the Azure Table Storage table"
 }
 
 variable "storage_account_id" {
-  type = string
+  type        = string
+  description = "ID of the storage account to assign permissions to"
 }
 
 variable "log_analytics_workspace_id" {
@@ -43,6 +45,8 @@ variable "log_analytics_workspace_id" {
 
 variable "tags" {
   type    = map(string)
+  description = "Tags for resources"
   default = {}
 }
+
 
