@@ -9,12 +9,14 @@ resource "azurerm_service_plan" "plan" {
 }
 
 resource "azurerm_application_insights" "ai" {
-  name                = "${var.name}-ai"
+  name                = var.app_insights_name
   location            = var.location
   resource_group_name = var.resource_group_name
   application_type    = "web"
+  workspace_id        = var.log_analytics_workspace_id
   tags                = var.tags
 }
+
 
 resource "azurerm_linux_function_app" "func" {
   name                       = var.name
@@ -69,4 +71,5 @@ resource "azurerm_role_assignment" "table_access" {
   scope              = var.storage_account_id
   skip_service_principal_aad_check = true
 }
+
 
