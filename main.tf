@@ -95,6 +95,9 @@ module "function_app" {
   eventhub_listen_conn_string    = module.eventhub.listen_connection_string
   eventhub_name                  = local.eventhub_name
 
+  # Log Analytics
+  log_analytics_workspace_id = module.log_analytics_workspace.id
+
   # Output destination (Table Storage)
   table_name                     = local.table_name
   storage_account_id             = module.sa_data.id
