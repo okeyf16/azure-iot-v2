@@ -15,13 +15,6 @@ resource "azurerm_eventhub" "eh" {
   message_retention   = var.retention_days
 }
 
-resource "azurerm_eventhub_consumer_group" "cg" {
-  name                = var.consumer_group
-  eventhub_name       = azurerm_eventhub.eh.name
-  namespace_name      = azurerm_eventhub_namespace.ns.name
-  resource_group_name = var.resource_group_name
-}
-
 resource "azurerm_eventhub_authorization_rule" "sender" {
   name                = "sender"
   eventhub_name       = azurerm_eventhub.eh.name
@@ -41,3 +34,4 @@ resource "azurerm_eventhub_authorization_rule" "listener" {
   send                = false
   manage              = false
 }
+
