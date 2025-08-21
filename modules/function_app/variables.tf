@@ -36,7 +36,13 @@ variable "storage_account_id" {
   type = string
 }
 
+variable "log_analytics_workspace_id" {
+  type        = string
+  description = "Log Analytics Workspace ID for Application Insights"
+}
+
 variable "tags" {
   type    = map(string)
   default = {}
 }
+
