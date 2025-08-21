@@ -97,7 +97,7 @@ module "function_app" {
 
   # App insights/Log Analytics
   #log_analytics_workspace_id = module.log_analytics_workspace.id #dynamic... next line is atatic & needs to be changed at each redeployment to actual value#
-  log_analytics_workspace_id  = "/subscriptions/9112a04a-6011-49f2-904c-f2b66b865b40/resourceGroups/ai_fn-iot-ehub-ai_d378ecc5-4cf0-499d-b760-f6276d68057f_managed/providers/microsoft.operationalinsights/workspaces/managed-fn-iot-ehub-ai-ws"
+  log_analytics_workspace_id = "/subscriptions/9112a04a-6011-49f2-904c-f2b66b865b40/resourceGroups/ai_fn-iot-ehub-ai_d378ecc5-4cf0-499d-b760-f6276d68057f_managed/providers/Microsoft.OperationalInsights/workspaces/managed-fn-iot-ehub-ai-ws"
   app_insights_name           = local.app_insights_name
 
  # Output destination (Table Storage)
