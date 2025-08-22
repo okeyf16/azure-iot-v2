@@ -13,7 +13,8 @@ locals {
   function_app_name         = var.function_app_name
   eh_endpoint_name          = var.eh_endpoint_name
   eh_route_name             = var.eh_route_name
-  app_insights_name         = "fn-iot-ehub-ai"    #Static..Please redifine for every deployment.. also refer to line 100
+  app_insights_name         = "${local.function_app_name}-ai" *new dynamic option
+  #app_insights_name        = "fn-iot-ehub-ai"                #previous Static..Please redifine for every deployment if dynamic fails .. 
   tags                      = var.tags
 }
 
@@ -79,6 +80,17 @@ module "sa_func" {
 }
 
 ######################
+# Log Analytics workspace for function #
+######################
+module "log_analytics_workspace" {
+  source              = "./modules/log_analytics"
+  name                = "logs-${local.function_app_name}"
+  location            = local.location
+  resource_group_name = module.resource_group.name
+  tags                = local.tags
+}
+
+######################
 # Azure Function App #
 ######################
 module "function_app" {
@@ -86,30 +98,22 @@ module "function_app" {
   name                           = local.function_app_name
   resource_group_name            = module.resource_group.name
   location                       = module.resource_group.location
-
-  # Runtime
   storage_account_name           = module.sa_func.name
   storage_account_access_key     = module.sa_func.primary_access_key
-
-  # Event Hub trigger
   eventhub_listen_conn_string    = module.eventhub.listen_connection_string
   eventhub_name                  = local.eventhub_name
-
-  # App insights/Log Analytics
-  #log_analytics_workspace_id = module.log_analytics_workspace.id #dynamic... next line is atatic & needs to be changed at each redeployment to actual value#
-  log_analytics_workspace_id = "/subscriptions/9112a04a-6011-49f2-904c-f2b66b865b40/resourceGroups/ai_fn-iot-ehub-ai_d378ecc5-4cf0-499d-b760-f6276d68057f_managed/providers/Microsoft.OperationalInsights/workspaces/managed-fn-iot-ehub-ai-ws"
-  app_insights_name           = local.app_insights_name
-
- # Output destination (Table Storage)
+  log_analytics_workspace_id     = module.log_analytics_workspace.id
+  app_insights_name              = local.app_insights_name
   table_name                     = local.table_name
   storage_account_id             = module.sa_data.id
-
-  tags = local.tags
+  tags                           = local.tags
+  # log_analytics_workspace_id = "/subscriptions/9112a04a-6011-49f2-904c-f2b66b865b40/resourceGroups/ai_fn-iot-ehub-ai_d378ecc5-4cf0-499d-b760-f6276d68057f_managed/providers/Microsoft.OperationalInsights/workspaces/managed-fn-iot-ehub-ai-ws" #static LAW, redefine if dynamic fails
 
   depends_on = [
     module.iothub,
     module.sa_func,
     module.sa_data,
     module.eventhub
+    module.log_analytics_workspace   # New for dynamic LAW 
   ]
 }
