@@ -13,7 +13,7 @@ locals {
   function_app_name         = var.function_app_name
   eh_endpoint_name          = var.eh_endpoint_name
   eh_route_name             = var.eh_route_name
-  app_insights_name         = "${local.function_app_name}-ai" *new dynamic option
+  app_insights_name         = "${local.function_app_name}-ai" #new dynamic option
   #app_insights_name        = "fn-iot-ehub-ai"                #previous Static..Please redifine for every deployment if dynamic fails .. 
   tags                      = var.tags
 }
