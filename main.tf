@@ -113,7 +113,7 @@ module "function_app" {
     module.iothub,
     module.sa_func,
     module.sa_data,
-    module.eventhub
+    module.eventhub,
     module.log_analytics_workspace   # New for dynamic LAW 
   ]
 }
