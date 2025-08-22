@@ -3,7 +3,7 @@ name: Deploy Python Azure Function
 on:
   push:
     branches:
-      - main  # Change to your deployment branch if needed
+      - main
 
 permissions:
   id-token: write
@@ -28,17 +28,15 @@ jobs:
       with:
         python-version: ${{ env.PYTHON_VERSION }}
 
-    - name: Install dependencies
+    - name: Install dependencies (optional if not pre-packaged)
       working-directory: ${{ env.FUNCTION_DIR }}
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        mkdir -p .python_packages/lib/site-packages
-        pip install -r requirements.txt --target=.python_packages/lib/site-packages
 
-    - name: Zip function app package
-      working-directory: ${{ env.FUNCTION_DIR }}
+    - name: Zip Function App for deployment
       run: |
+        cd $FUNCTION_DIR
         zip -r ../functionapp.zip .
 
     - name: Azure Login
@@ -52,4 +50,3 @@ jobs:
           --resource-group $AZURE_RESOURCE_GROUP \
           --name $AZURE_FUNCTIONAPP_NAME \
           --src functionapp.zip
-
