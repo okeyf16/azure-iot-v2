@@ -1,15 +1,21 @@
 {
-    "bindings": [
-      {
-        "name": "event",
-        "type": "eventHubTrigger",
-        "direction": "in",
-        "eventHubName": "%EVENT_HUB_NAME%",
-        "connection": "EventHubConnection",
-        "cardinality": "one",
-        "consumerGroup": "$Default"
-      }
-    ],
-    "scriptFile": "__init__.py"
-  }
-  
+  "bindings": [
+    {
+      "name": "event",
+      "type": "eventHubTrigger",
+      "direction": "in",
+      "eventHubName": "%EVENT_HUB_NAME%",
+      "connection": "EventHubConnection",
+      "cardinality": "one",
+      "consumerGroup": "$Default"
+    },
+    {
+      "name": "outputTable",
+      "type": "table",
+      "direction": "out",
+      "tableName": "TelemetryData",
+      "connection": "TelemetryStorage"
+    }
+  ],
+  "scriptFile": "__init__.py"
+}
