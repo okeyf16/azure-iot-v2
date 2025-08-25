@@ -1,0 +1,12 @@
+{
+    "IsEncrypted": false,
+    "Values": {
+      "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+      "FUNCTIONS_WORKER_RUNTIME": "python",
+      "EventHubConnection": "Endpoint=sb://ehns-iot-basic.servicebus.windows.net/;SharedAccessKeyName=manage;SharedAccessKey=Jx4/wCYZDyPeBBzhXwS7Kt0Hwh/uwbkIX+AEhCqOmJU=;EntityPath=telemetry",
+      "EVENT_HUB_NAME": "telemetry",
+      "TABLE_NAME": "telemetry",
+      "STORAGE_ACCOUNT_URL": "https://sttelemetrydata123.table.core.windows.net"
+    }
+  }
+  
