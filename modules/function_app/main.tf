@@ -32,7 +32,7 @@ resource "azurerm_linux_function_app" "func" {
 
   site_config {
     application_stack {
-      python_version = "3.10"  # Or "3.10", "3.9" depending on your code
+      python_version = "3.11"  # Or "3.10", "3.9" depending on your code
     }
 
     ftps_state          = "Disabled"
@@ -71,6 +71,7 @@ resource "azurerm_role_assignment" "table_access" {
   scope              = var.storage_account_id
   skip_service_principal_aad_check = true
 }
+
 
 
 
