@@ -12,7 +12,7 @@ permissions:
 env:
   AZURE_FUNCTIONAPP_NAME: fn-iot-ehub
   AZURE_RESOURCE_GROUP: iot-gen-ehub
-  PYTHON_VERSION: '3.9'
+  PYTHON_VERSION: '3.11'
   FUNCTION_DIR: function_app
 
 jobs:
@@ -53,5 +53,6 @@ jobs:
           --resource-group $AZURE_RESOURCE_GROUP \
           --name $AZURE_FUNCTIONAPP_NAME \
           --src functionapp.zip
+
 
 
