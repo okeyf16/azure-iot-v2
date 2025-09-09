@@ -8,6 +8,7 @@ import uuid
 
 def main(event: func.EventHubEvent):
     logging.info('EventHub trigger function processed a message.')
+    logging.info(event.get_body().decode())
 
     try:
         # Parse the Event Hub message
@@ -47,3 +48,4 @@ def main(event: func.EventHubEvent):
 
     except Exception as e:
         logging.error(f"❌ Error processing EventHub message: {str(e)}")
+
