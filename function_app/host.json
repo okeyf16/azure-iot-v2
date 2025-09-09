@@ -8,9 +8,14 @@
     "applicationInsights": {
       "samplingSettings": {
         "isEnabled": true
+        "maxTelemetryItemsPerSecond" : 5
       }
+    },
+    "logLevel": {
+      "Function": "Debug"
     }
   }
 }
+
 
 
