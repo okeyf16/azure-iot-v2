@@ -54,5 +54,12 @@ jobs:
           --name $AZURE_FUNCTIONAPP_NAME \
           --src functionapp.zip
 
+    - name: Restart Function App (force sync)
+      run: |
+        az functionapp restart --name $AZURE_FUNCTIONAPP_NAME --resource-group $AZURE_RESOURCE_GROUP
+    
+    - name: List deployed functions
+      run: |
+        az functionapp function list --name $AZURE_FUNCTIONAPP_NAME --resource-group $AZURE_RESOURCE_GROUP
 
 
