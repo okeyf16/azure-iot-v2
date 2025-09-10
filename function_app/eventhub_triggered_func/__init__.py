@@ -5,12 +5,9 @@ import azure.functions as func
 from datetime import datetime
 import uuid
 
-# Note: TableServiceClient and UpdateMode are no longer needed because the output binding handles the connection.
-
 def main(event: func.EventHubEvent, outputTable: func.Out[str]):
     logging.info('EventHub trigger function processed a message.')
-    logging.info(event.get_body().decode())
-
+    
     try:
         # Parse the Event Hub message
         message = event.get_body().decode('utf-8')
@@ -18,18 +15,19 @@ def main(event: func.EventHubEvent, outputTable: func.Out[str]):
 
         logging.info(f"Parsed message: {data}")
 
-        # Construct row
-        row = {
+        # Construct the entity for the output binding
+        output_entity = {
             "PartitionKey": data.get("deviceId", "unknown"),
             "RowKey": str(uuid.uuid4()),
             "timestamp": datetime.utcnow().isoformat(),
             **data
         }
 
-        # Use the output binding to write the data to the table
-        # This is where the magic happens; the host manages the connection.
-        outputTable.set(json.dumps(row))
-        logging.info(f"✅ Row inserted to table: {row}")
+        # Set the output binding to write the entity to the table
+        outputTable.set(json.dumps(output_entity))
+        
+        logging.info(f"✅ Entity sent to output binding: {output_entity}")
 
     except Exception as e:
         logging.error(f"❌ Error processing EventHub message: {str(e)}")
+
