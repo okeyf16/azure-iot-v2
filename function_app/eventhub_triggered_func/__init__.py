@@ -1,12 +1,12 @@
 import logging
 import os
 import json
-import azure.functions as func
-from azure.data.tables import TableServiceClient, UpdateMode
-from datetime import datetime
 import uuid
+import azure.functions as func
+from datetime import datetime
 
-def main(event: func.EventHubEvent):
+# The 'outputTable' parameter is the output binding
+def main(event: func.EventHubEvent, outputTable: func.Out[func.HttpResponse]):
     logging.info('EventHub trigger function processed a message.')
     logging.info(event.get_body().decode())
 
@@ -17,35 +17,21 @@ def main(event: func.EventHubEvent):
 
         logging.info(f"Parsed message: {data}")
 
-        # Environment variables
-        table_name = os.getenv("TABLE_NAME")
-        connection_string = os.getenv("TelemetryStorage")
-
-        if not table_name or not connection_string:
-            logging.error("TABLE_NAME or TelemetryStorage environment variable not set.")
-            return
-
-        # Connect using connection string
-        table_service = TableServiceClient.from_connection_string(conn_str=connection_string)
-        table_client = table_service.get_table_client(table_name)
-
-        # Ensure table exists (idempotent)
-        try:
-            table_client.create_table()
-        except Exception:
-            pass  # table already exists
-
-        # Construct row
-        row = {
+        # Construct the entity for the output binding
+        # The output binding automatically handles upserting the entity to the table
+        output_entity = {
             "PartitionKey": data.get("deviceId", "unknown"),
             "RowKey": str(uuid.uuid4()),
             "timestamp": datetime.utcnow().isoformat(),
             **data
         }
 
-        table_client.upsert_entity(entity=row, mode=UpdateMode.MERGE)
-        logging.info(f"✅ Row inserted to table: {row}")
+        # Set the output binding
+        outputTable.set(json.dumps(output_entity))
+        
+        logging.info(f"✅ Entity sent to output binding: {output_entity}")
 
     except Exception as e:
         logging.error(f"❌ Error processing EventHub message: {str(e)}")
+
 
