@@ -48,8 +48,16 @@ jobs:
     # --- END NEW STEP ---
     
     - name: Zip Function App for deployment
-      working-directory: ${{ env.FUNCTION_DIR }}
       run: |
+        # Change working directory to the root of the repository
+        cd ${{ github.workspace }}
+        # Correctly zip the necessary files from the function_app directory
+        # The -j flag flattens the directory structure, which is not what we want.
+        # So we explicitly list the files and directory to include from the FUNCTION_DIR
+        zip -r functionapp.zip ${{ env.FUNCTION_DIR }}/host.json ${{ env.FUNCTION_DIR }}/requirements.txt ${{ env.FUNCTION_DIR }}/eventhub_triggered_func -x "*.git*" "__pycache__/*"
+        # The above command is complex. A simpler, more robust way is to use `cd`.
+        # Corrected simplified method
+        cd ${{ env.FUNCTION_DIR }}
         zip -r ../functionapp.zip . -x "*.git*" "__pycache__/*"
 
     - name: List ZIP contents (debug)
@@ -84,6 +92,7 @@ jobs:
       run: |
         sleep 30 # Give time for the function to be discovered after restart
         az functionapp function list --name $AZURE_FUNCTIONAPP_NAME --resource-group $AZURE_RESOURCE_GROUP --output table
+
 
 
 
