@@ -48,17 +48,8 @@ jobs:
     # --- END NEW STEP ---
     
     - name: Zip Function App for deployment
+      working-directory: ${{ env.FUNCTION_DIR }}
       run: |
-        # Change working directory to the function root
-        cd ${{ env.FUNCTION_DIR }}
-        # Create a temporary directory for the correct structure
-        mkdir staging
-        # Copy global files to the root of the staging directory
-        cp requirements.txt host.json staging/
-        # Copy the function directory into the staging directory
-        cp -r eventhub_triggered_func staging/
-        # Zip the contents of the staging directory
-        cd staging
         zip -r ../functionapp.zip . -x "*.git*" "__pycache__/*"
 
     - name: List ZIP contents (debug)
@@ -93,6 +84,7 @@ jobs:
       run: |
         sleep 30 # Give time for the function to be discovered after restart
         az functionapp function list --name $AZURE_FUNCTIONAPP_NAME --resource-group $AZURE_RESOURCE_GROUP --output table
+
 
 
 
