@@ -34,6 +34,11 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
+    # New step: Install Azure Functions Core Tools
+    - name: Install Azure Functions Core Tools
+      run: |
+        npm install -g azure-functions-core-tools@4 --unsafe-perm true
+
     # --- NEW DEBUGGING STEP ---
     - name: 💡 Install tree for debugging
       run: sudo apt-get install tree
@@ -45,40 +50,22 @@ jobs:
     - name: 💡 Check dependencies for debugging
       run: pip freeze
        
-    # --- END NEW STEP ---
+    # --- END NEW DEBUGGING STEP ---
     
-    - name: Zip Function App for deployment
-      run: |
-       # Change working directory to the function app root
-        cd ${{ env.FUNCTION_DIR }}
-        # Create a ZIP file of the function app's contents
-        # The -r flag is crucial to include subdirectories
-        zip -r ../functionapp.zip . -x "*.git*" "__pycache__/*"
-
-    - name: List ZIP contents (debug)
-      run: unzip -l functionapp.zip
-
     - name: Azure Login
       uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: Deploy to Azure Function App
-      id: deploy
+    # New step: Deploy with Core Tools, replacing the old 'Zip' and 'Deploy' steps
+    - name: Deploy to Azure Function App with Core Tools
       run: |
-        # Force Azure to run the build process on its server
-        az webapp config appsettings set \
-          --resource-group $AZURE_RESOURCE_GROUP \
-          --name $AZURE_FUNCTIONAPP_NAME \
-          --settings SCM_DO_BUILD_DURING_DEPLOYMENT=true \
-          --settings WEBSITE_RUN_FROM_PACKAGE=1
-
-        # Deploy with verbose logging to see the remote build process
-        az functionapp deployment source config-zip \
-          --resource-group $AZURE_RESOURCE_GROUP \
-          --name $AZURE_FUNCTIONAPP_NAME \
-          --src functionapp.zip \
-          --debug
+        func azure functionapp publish ${{ env.AZURE_FUNCTIONAPP_NAME }} \
+          --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+          --python \
+          --build-native-deps \
+          --force
+      working-directory: ${{ env.FUNCTION_DIR }}
           
     - name: Restart Function App (force sync)
       run: |
@@ -88,6 +75,7 @@ jobs:
       run: |
         sleep 30 # Give time for the function to be discovered after restart
         az functionapp function list --name $AZURE_FUNCTIONAPP_NAME --resource-group $AZURE_RESOURCE_GROUP --output table
+
 
 
 
