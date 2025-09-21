@@ -20,6 +20,7 @@ resource "azurerm_app_service" "this" {
 
   site_config {
     always_on = false # Free tier does not support Always On
+    use_32_bit_worker_process   = true  # Add this line
   }
 
   app_settings = {
