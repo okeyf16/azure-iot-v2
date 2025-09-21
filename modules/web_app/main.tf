@@ -23,8 +23,8 @@ resource "azurerm_app_service" "this" {
   }
 
   app_settings = {
-    "APPINSIGHTS_INSTRUMENTATIONKEY"        = var.app_insights_key
-    "APPLICATIONINSIGHTS_CONNECTION_STRING" = var.app_insights_conn_string
+    #"APPINSIGHTS_INSTRUMENTATIONKEY"        = var.app_insights_key
+    #"APPLICATIONINSIGHTS_CONNECTION_STRING" = var.app_insights_conn_string
     "STORAGE_CONN_STR"                      = var.storage_conn_str
     "API_KEY"                               = var.api_key
   }
