@@ -8,7 +8,6 @@ resource "azurerm_service_plan" "this" {
   os_type = "Linux" 
   sku_name = "F1"
   }
-}
 
 #######################
 # Web App             #
