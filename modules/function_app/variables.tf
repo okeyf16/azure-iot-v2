@@ -59,6 +59,17 @@ variable "app_insights_name" {
   description = "Name of the Application Insights instance"
 }
 
+# modules/function_app/variables.tf
+
+variable "app_insights_instrumentation_key" {
+  type        = string
+  description = "The instrumentation key of the Application Insights instance."
+}
+
+variable "app_insights_connection_string" {
+  type        = string
+  description = "The connection string of the Application Insights instance."
+}
 
 
 
