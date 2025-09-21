@@ -38,6 +38,12 @@ variable "storage_account_id" {
   description = "ID of the storage account to assign permissions to"
 }
 
++variable "storage_account_data_connection_string" {
+  type        = string
+  description = "Connection string for the telemetry data storage account"
+  sensitive   = true
+}
+
 variable "log_analytics_workspace_id" {
   type        = string
   description = "Log Analytics Workspace ID for Application Insights"
@@ -52,6 +58,7 @@ variable "app_insights_name" {
   type        = string
   description = "Name of the Application Insights instance"
 }
+
 
 
 
