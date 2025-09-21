@@ -28,6 +28,13 @@ resource "azurerm_linux_function_app" "func" {
 
   identity {
     type = "SystemAssigned"
+}
+
+lifecycle {
+  ignore_changes = [
+    # This is set by the deployment pipeline (e.g., GitHub Actions)
+    app_settings["WEBSITE_RUN_FROM_PACKAGE"]
+    ]
   }
 
   site_config {
@@ -37,12 +44,18 @@ resource "azurerm_linux_function_app" "func" {
 
     ftps_state          = "Disabled"
     minimum_tls_version = "1.2"
+
+   # Add missing settings from the live configuration
+    scm_type                       = "GitHubAction"
+    function_app_scale_limit       = 200
+    minimum_elastic_instance_count = 1
+
   }
 
   app_settings = {
     FUNCTIONS_WORKER_RUNTIME         = "python"
     FUNCTIONS_EXTENSION_VERSION      = "~4"
-    WEBSITE_RUN_FROM_PACKAGE         = "1"
+    # WEBSITE_RUN_FROM_PACKAGE         = "1" #reccomended for removal by gemini during repo/code harmonization
 
     # Bindings
     EventHubConnection               = var.eventhub_listen_conn_string
@@ -50,7 +63,8 @@ resource "azurerm_linux_function_app" "func" {
 
     # Storage
     #TABLE_NAME                       = var.table_name
-    TELEMETRY_TABLE_NAME = var.telemetry_table_name
+    TELEMETRY_TABLE_NAME              = var.telemetry_table_name
+    TelemetryStorage                  = var.storage_account_data_connection_string
 
     # App Insights
     APPINSIGHTS_INSTRUMENTATIONKEY       = azurerm_application_insights.ai.instrumentation_key
@@ -72,6 +86,7 @@ resource "azurerm_role_assignment" "table_access" {
   scope              = var.storage_account_id
   skip_service_principal_aad_check = true
 }
+
 
 
 
