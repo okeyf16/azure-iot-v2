@@ -28,7 +28,7 @@ variable "eventhub_name" {
   type = string
 }
 
-variable "table_name" {
+variable "telemetry_table_name" {
   type        = string
   description = "Name of the Azure Table Storage table"
 }
@@ -52,6 +52,7 @@ variable "app_insights_name" {
   type        = string
   description = "Name of the Application Insights instance"
 }
+
 
 
 
