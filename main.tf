@@ -104,6 +104,8 @@ module "function_app" {
   eventhub_name                  = local.eventhub_name
   log_analytics_workspace_id     = module.log_analytics_workspace.id
   app_insights_name              = local.app_insights_name
+  app_insights_instrumentation_key = module.function_app.app_insights_instrumentation_key
+  app_insights_connection_string = module.function_app.app_insights_connection_string
   # table_name                     = local.table_name
   telemetry_table_name           = module.sa_data.telemetry_table_name
   storage_account_id             = module.sa_data.id
