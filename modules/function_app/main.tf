@@ -46,7 +46,7 @@ lifecycle {
     minimum_tls_version = "1.2"
 
    # Add missing settings from the live configuration
-    scm_type                       = "GitHubAction"
+  
 
   }
 
@@ -84,6 +84,7 @@ resource "azurerm_role_assignment" "table_access" {
   scope              = var.storage_account_id
   skip_service_principal_aad_check = true
 }
+
 
 
 
