@@ -14,3 +14,10 @@ resource "azurerm_storage_table" "tables" {
   name                 = each.value
   storage_account_name = azurerm_storage_account.this.name
 }
+
+resource "azurerm_storage_table" "telemetry" {
+  name                 = "TelemetryData"
+  storage_account_name = azurerm_storage_account.this.name
+  resource_group_name  = var.resource_group_name
+}
+
