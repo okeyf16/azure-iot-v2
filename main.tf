@@ -128,7 +128,7 @@ module "function_app" {
 
 module "web_app" {
   source              = "./modules/web_app"
-  name                = "iotwebapp309"
+  name                = "iotwebapp309v2"
   plan_name           = "iot-free-plan"
   location            = module.resource_group.location
   resource_group_name = module.resource_group.name
