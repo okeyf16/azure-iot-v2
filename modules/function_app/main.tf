@@ -47,8 +47,6 @@ lifecycle {
 
    # Add missing settings from the live configuration
     scm_type                       = "GitHubAction"
-    function_app_scale_limit       = 200
-    minimum_elastic_instance_count = 1
 
   }
 
@@ -86,6 +84,7 @@ resource "azurerm_role_assignment" "table_access" {
   scope              = var.storage_account_id
   skip_service_principal_aad_check = true
 }
+
 
 
 
