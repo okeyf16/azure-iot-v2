@@ -119,3 +119,24 @@ module "function_app" {
     module.log_analytics_workspace   # New for dynamic LAW 
   ]
 }
+
+######################
+# Azure Web App #
+######################
+
+module "web_app" {
+  source              = "./modules/web_app"
+  name                = "iotwebapp309"
+  plan_name           = "iot-free-plan"
+  location            = module.resource_group.location
+  resource_group_name = module.resource_group.name
+
+  # Connections pulled dynamically
+  app_insights_key         = module.function_app.app_insights_instrumentation_key
+  app_insights_conn_string = module.function_app.app_insights_connection_string
+  storage_conn_str         = module.sa_data.primary_connection_string
+  api_key                  = "987654321"
+
+  tags = local.tags
+}
+
