@@ -49,7 +49,8 @@ resource "azurerm_linux_function_app" "func" {
     EVENT_HUB_NAME                   = var.eventhub_name
 
     # Storage
-    TABLE_NAME                       = var.table_name
+    #TABLE_NAME                       = var.table_name
+    TELEMETRY_TABLE_NAME = var.telemetry_table_name
 
     # App Insights
     APPINSIGHTS_INSTRUMENTATIONKEY       = azurerm_application_insights.ai.instrumentation_key
@@ -71,6 +72,7 @@ resource "azurerm_role_assignment" "table_access" {
   scope              = var.storage_account_id
   skip_service_principal_aad_check = true
 }
+
 
 
 
