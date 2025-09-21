@@ -132,8 +132,8 @@ module "web_app" {
   resource_group_name = module.resource_group.name
 
   # Connections pulled dynamically
-  # app_insights_key         = module.function_app.app_insights_instrumentation_key
-  # app_insights_conn_string = module.function_app.app_insights_connection_string
+  app_insights_key         = module.function_app.app_insights_instrumentation_key
+  app_insights_conn_string = module.function_app.app_insights_connection_string
   storage_conn_str         = module.sa_data.primary_connection_string
   api_key                  = "987654321"
 
