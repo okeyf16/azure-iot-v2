@@ -31,4 +31,15 @@ resource "azurerm_iothub_route" "eh_route" {
   enabled             = true
 }
 
+resource "azurerm_iothub_shared_access_policy" "iothubowner" {
+  name                = "iothubowner"
+  resource_group_name = var.resource_group_name
+  iothub_name         = azurerm_iothub.this.name
+
+  registry_read   = true
+  registry_write  = true
+  service_connect = true
+  device_connect  = true
+}
+
 
