@@ -71,6 +71,11 @@ variable "app_insights_connection_string" {
   description = "The connection string of the Application Insights instance."
 }
 
+variable "iothub_connection" {
+  type        = string
+  description = "IoT Hub connection string for device commands"
+}
+
 
 
 
