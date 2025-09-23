@@ -111,7 +111,8 @@ module "function_app" {
   storage_account_id             = module.sa_data.id
   storage_account_data_connection_string = module.sa_data.primary_connection_string
   tags                           = local.tags
-  # log_analytics_workspace_id = "/subscriptions/9112a04a-6011-49f2-904c-f2b66b865b40/resourceGroups/ai_fn-iot-ehub-ai_d378ecc5-4cf0-499d-b760-f6276d68057f_managed/providers/Microsoft.OperationalInsights/workspaces/managed-fn-iot-ehub-ai-ws" #static LAW, redefine if dynamic fails
+  # 👇 Pass IoT Hub connection string here
+  iothub_connection              = module.iothub.connection_string
 
   depends_on = [
     module.iothub,
