@@ -32,7 +32,7 @@ resource "azurerm_iothub_route" "eh_route" {
 }
 
 resource "azurerm_iothub_shared_access_policy" "iothubowner" {
-  name                = "iothubowner"
+  name                = "iothubowner1"
   resource_group_name = var.resource_group_name
   iothub_name         = azurerm_iothub.this.name
 
@@ -41,5 +41,6 @@ resource "azurerm_iothub_shared_access_policy" "iothubowner" {
   service_connect = true
   device_connect  = true
 }
+
 
 
