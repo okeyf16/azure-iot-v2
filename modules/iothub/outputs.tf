@@ -16,7 +16,7 @@ output "endpoint_name" {
 }
 
 output "connection_string" {
-  value     = azurerm_iothub.this.shared_access_policy[0].primary_connection_string
+  value     = azurerm_iothub_shared_access_policy.iothubowner.primary_connection_string
   sensitive = true
 }
 
