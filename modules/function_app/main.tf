@@ -69,7 +69,7 @@ lifecycle {
     APPLICATIONINSIGHTS_CONNECTION_STRING = azurerm_application_insights.ai.connection_string
 
     #IOT Hub
-    IOTHUB_CONNECTION                = module.iothub.connection_string   # 👈 New
+    IOTHUB_CONNECTION                = var.iothub.connection_string   # 👈 New
   }
 
   tags = var.tags
@@ -87,6 +87,7 @@ resource "azurerm_role_assignment" "table_access" {
   scope              = var.storage_account_id
   skip_service_principal_aad_check = true
 }
+
 
 
 
