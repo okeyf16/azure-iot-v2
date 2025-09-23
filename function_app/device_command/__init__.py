@@ -1,28 +1,64 @@
 import logging
+import json
 import azure.functions as func
 from azure.iot.hub import IoTHubRegistryManager
 import os
-import json
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info("Received device command request.")
+    logging.info("Device command function triggered.")
 
     try:
-        device_id = req.route_params.get("device_id")
+        # Parse request JSON
         body = req.get_json()
+        device_id = body.get("deviceId")
+        method_name = body.get("methodName", "turnOnOff")
+        payload = body.get("payload", {})
+        timeout = body.get("timeout", 30)
 
-        iothub_connection = os.getenv("IOTHUB_CONNECTION")
-        registry_manager = IoTHubRegistryManager(iothub_connection)
+        if not device_id:
+            return func.HttpResponse(
+                json.dumps({"error": "deviceId is required"}),
+                status_code=400,
+                mimetype="application/json"
+            )
 
-        # Example: invoke direct method "setOnOff"
-        method_name = "setOnOff"
-        payload = {"state": body.get("state", "off")}
+        # Get IoT Hub connection string from env
+        connection_string = os.getenv("IOTHUB_CONNECTION")
+        if not connection_string:
+            return func.HttpResponse(
+                json.dumps({"error": "IOTHUB_CONNECTION not set"}),
+                status_code=500,
+                mimetype="application/json"
+            )
 
-        response = registry_manager.invoke_device_method(device_id, method_name, payload)
-        logging.info(f"Command sent to {device_id}, response: {response}")
+        # Connect to IoT Hub
+        registry_manager = IoTHubRegistryManager(connection_string)
 
-        return func.HttpResponse(json.dumps(response.as_dict()), status_code=200)
+        # Invoke direct method on device
+        response = registry_manager.invoke_device_method(
+            device_id,
+            {
+                "methodName": method_name,
+                "payload": payload,
+                "responseTimeoutInSeconds": timeout
+            }
+        )
+
+        # Return IoT Hub response back to caller
+        return func.HttpResponse(
+            json.dumps({
+                "status": "success",
+                "deviceId": device_id,
+                "methodResponse": response.as_dict()
+            }),
+            status_code=200,
+            mimetype="application/json"
+        )
 
     except Exception as e:
-        logging.error(str(e))
-        return func.HttpResponse(str(e), status_code=500)
+        logging.error(f"Error sending command: {str(e)}")
+        return func.HttpResponse(
+            json.dumps({"status": "failed", "error": str(e)}),
+            status_code=500,
+            mimetype="application/json"
+        )
