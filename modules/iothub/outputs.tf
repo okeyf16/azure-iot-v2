@@ -15,3 +15,8 @@ output "endpoint_name" {
   value = azurerm_iothub_endpoint_eventhub.eh_endpoint.name
 }
 
+output "connection_string" {
+  value     = azurerm_iothub.this.shared_access_policy[0].primary_connection_string
+  sensitive = true
+}
+
