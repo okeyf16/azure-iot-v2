@@ -82,6 +82,12 @@ variable "iothub_service_connection_string" {
   sensitive   = true
 }
 
+variable "azure_webjobs_storage_connection_string" {
+  description = "Connection string for AzureWebJobsStorage used by the Function App"
+  type        = string
+  sensitive   = true
+}
+
 
 
 
