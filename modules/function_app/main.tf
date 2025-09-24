@@ -71,7 +71,7 @@ lifecycle {
     #IOT Hub
     IOTHUB_CONNECTION                = var.iothub_connection  # 👈 New
 
-    AzureWebJobsStorage              = var.storage_connection_string
+    AzureWebJobsStorage              = var.azure_webjobs_storage_connection_string
     #COMMAND_FUNCTION_URL             = "https://iotoct2-c8g7gjbdhec2b6h9.northeurope-01.azurewebsites.net/command/"
   }
 
@@ -90,6 +90,7 @@ resource "azurerm_role_assignment" "table_access" {
   scope              = var.storage_account_id
   skip_service_principal_aad_check = true
 }
+
 
 
 
