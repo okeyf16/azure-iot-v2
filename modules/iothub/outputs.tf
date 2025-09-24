@@ -20,4 +20,10 @@ output "connection_string" {
   sensitive = true
 }
 
+output "iothub_service_connection_string" {
+  description = "Service-level connection string for IoT Hub"
+  value       = azurerm_iothub_shared_access_policy.service_policy.primary_connection_string
+  sensitive   = true
+}
+
 
