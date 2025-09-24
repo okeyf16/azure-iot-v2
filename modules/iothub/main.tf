@@ -50,7 +50,9 @@ resource "azurerm_iothub_shared_access_policy" "service_policy" {
   registry_write = true   # Needed for device twin updates
   service_connect = true  # Needed for sending C2D messages
   registry_read  = true
+  device_connect  = true
 }
+
 
 
 
