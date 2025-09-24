@@ -111,8 +111,11 @@ module "function_app" {
   storage_account_id             = module.sa_data.id
   storage_account_data_connection_string = module.sa_data.primary_connection_string
   tags                           = local.tags
-  # 👇 Pass IoT Hub connection string here
+  # 👇 Pass IoT Hub connection string here for D2C
   iothub_connection              = module.iothub.connection_string
+
+   # New: pass IoT Hub connection string for C2D
+  iothub_service_connection_string = module.iothub.iothub_service_connection_string
 
   depends_on = [
     module.iothub,
