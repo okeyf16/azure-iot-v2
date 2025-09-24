@@ -117,6 +117,8 @@ module "function_app" {
    # New: pass IoT Hub connection string for C2D
   iothub_service_connection_string = module.iothub.iothub_service_connection_string
 
+  azure_webjobs_storage_connection_string = module.sa_func.primary_connection_string
+  
   depends_on = [
     module.iothub,
     module.sa_func,
