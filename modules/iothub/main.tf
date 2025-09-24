@@ -42,5 +42,15 @@ resource "azurerm_iothub_shared_access_policy" "iothubowner" {
   device_connect  = true
 }
 
+resource "azurerm_iothub_shared_access_policy" "service_policy" {
+  name                = "service"
+  resource_group_name = azurerm_iothub.this.resource_group_name
+  iothub_name         = azurerm_iothub.this.name
+
+  registry_write = true   # Needed for device twin updates
+  service_connect = true  # Needed for sending C2D messages
+  registry_read  = true
+}
+
 
 
