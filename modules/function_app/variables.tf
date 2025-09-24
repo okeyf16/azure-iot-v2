@@ -76,6 +76,12 @@ variable "iothub_connection" {
   description = "IoT Hub connection string for device commands"
 }
 
+variable "iothub_service_connection_string" {
+  description = "IoT Hub service-level connection string"
+  type        = string
+  sensitive   = true
+}
+
 
 
 
