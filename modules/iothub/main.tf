@@ -43,7 +43,7 @@ resource "azurerm_iothub_shared_access_policy" "iothubowner" {
 }
 
 resource "azurerm_iothub_shared_access_policy" "service_policy" {
-  name                = "service"
+  name                = "service1"
   resource_group_name = azurerm_iothub.this.resource_group_name
   iothub_name         = azurerm_iothub.this.name
 
@@ -52,6 +52,7 @@ resource "azurerm_iothub_shared_access_policy" "service_policy" {
   registry_read  = true
   device_connect  = true
 }
+
 
 
 
