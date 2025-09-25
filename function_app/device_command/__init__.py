@@ -11,7 +11,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         # Parse request JSON
         body = req.get_json()
         device_id = body.get("deviceId")
-        method_name = body.get("methodName", "turnOnOff")
+        method_name = body.get("commandName", "turnOnOff")
         payload = body.get("payload", {})
         timeout = body.get("timeout", 30)
 
