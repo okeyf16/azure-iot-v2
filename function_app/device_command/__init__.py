@@ -1,7 +1,8 @@
 import logging
 import json
 import azure.functions as func
-from azure.iot.hub import IoTHubRegistryManager, DirectMethodRequest
+from azure.iot.hub import IoTHubRegistryManager
+from azure.iot.hub.models import DirectMethodRequest
 import os
 # Forcing a clean build v2
 
