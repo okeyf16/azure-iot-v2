@@ -56,9 +56,15 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         )
 
     except Exception as e:
-        logging.error(f"Error sending command: {str(e)}")
-        return func.HttpResponse(
-            json.dumps({"status": "failed", "error": str(e)}),
-            status_code=500,
-            mimetype="application/json"
-        )
+    # Logs full stack trace, not just the error message
+    logging.exception("Error sending command")
+    
+    return func.HttpResponse(
+        json.dumps({
+            "status": "failed",
+            "error": str(e)
+        }),
+        status_code=500,
+        mimetype="application/json"
+    )
+
