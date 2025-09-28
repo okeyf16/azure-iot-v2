@@ -43,14 +43,16 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         # Connect to IoT Hub
         registry_manager = IoTHubRegistryManager(connection_string)
 
+        # Create the direct method request object
+        direct_method_request = DirectMethodRequest(
+            method_name=method_name,
+            payload=payload,
+            response_timeout_in_seconds=timeout
+        )
+        
         # Invoke direct method on device
         response = registry_manager.invoke_device_method(
-            device_id,
-            {
-                "methodName": method_name,
-                "payload": payload,
-                "responseTimeoutInSeconds": timeout
-            }
+            device_id, direct_method_request
         )
 
         # Return IoT Hub response back to caller
