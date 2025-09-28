@@ -4,14 +4,23 @@ import azure.functions as func
 from azure.iot.hub import IoTHubRegistryManager
 import os
 
+
 def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info("Device command function triggered.")
 
     try:
-        # Parse request JSON
-        body = req.get_json()
+        # Parse request JSON safely
+        try:
+            body = req.get_json()
+        except ValueError:
+            return func.HttpResponse(
+                json.dumps({"error": "Invalid JSON body"}),
+                status_code=400,
+                mimetype="application/json"
+            )
+
         device_id = body.get("deviceId")
-        method_name = body.get("commandName", "toggle")
+        method_name = body.get("commandName", "turnOnOff")
         payload = body.get("payload", {})
         timeout = body.get("timeout", 30)
 
@@ -22,7 +31,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 mimetype="application/json"
             )
 
-        # Get IoT Hub connection string from env
+        # Get IoT Hub connection string from environment
         connection_string = os.getenv("IOTHUB_CONNECTION")
         if not connection_string:
             return func.HttpResponse(
@@ -56,9 +65,8 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         )
 
     except Exception as e:
-    # Logs full stack trace, not just the error message
+        # Logs full traceback to App Insights
         logging.exception("Error sending command")
-        
         return func.HttpResponse(
             json.dumps({
                 "status": "failed",
@@ -66,5 +74,4 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             }),
             status_code=500,
             mimetype="application/json"
-    )
-
+        )
