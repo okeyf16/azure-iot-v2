@@ -42,7 +42,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             )
 
         # Connect to IoT Hub
-        registry_manager = IoTHubRegistryManager(connection_string)
+        registry_manager = IoTHubRegistryManager.from_connection_string(connection_string)
 
         # Create the direct method request object
         direct_method_request = DirectMethodRequest(
