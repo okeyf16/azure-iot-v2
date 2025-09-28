@@ -3,7 +3,7 @@ import json
 import azure.functions as func
 from azure.iot.hub import IoTHubRegistryManager
 import os
-
+# Forcing a clean build v2
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info("Device command function triggered.")
