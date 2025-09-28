@@ -4,6 +4,7 @@ azure-eventhub
 azure-data-tables
 #azure-iot-hub
 azure-iot-hub==2.7.0
+requests
 
 
 
