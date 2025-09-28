@@ -1,9 +1,10 @@
 import logging
 import json
+import os
 import azure.functions as func
 from azure.iot.hub import IoTHubRegistryManager
 from azure.iot.hub.models import DirectMethodRequest
-import os
+
 # Forcing a clean build v2
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
