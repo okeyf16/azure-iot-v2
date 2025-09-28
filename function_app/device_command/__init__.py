@@ -48,7 +48,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         
         # SIMPLIFIED: Invoke the method directly with its name and payload
         response = registry_manager.invoke_device_method(
-            device_id, method_name, payload, response_timeout_in_seconds=timeout
+            device_id, method_name, payload
         )
 
         # Return IoT Hub response back to caller
