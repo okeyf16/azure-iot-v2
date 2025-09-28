@@ -3,7 +3,7 @@ import json
 import os
 import azure.functions as func
 
-# The DirectMethodRequest class is not needed with the modern SDK
+# No special imports are needed for the legacy SDK pattern
 from azure.iot.hub import IoTHubRegistryManager
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
@@ -21,9 +21,8 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             )
 
         device_id = body.get("deviceId")
-        method_name = body.get("commandName") # Get the method name from the request
+        method_name = body.get("commandName")
         payload = body.get("payload", {})
-        timeout = body.get("timeout", 30)
 
         if not device_id or not method_name:
             return func.HttpResponse(
@@ -32,10 +31,8 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 mimetype="application/json"
             )
 
-        # Get IoT Hub connection string from environment
         connection_string = os.getenv("IOTHUB_CONNECTION")
         if not connection_string:
-            # This error is for server configuration issues
             logging.error("IOTHUB_CONNECTION not set") 
             return func.HttpResponse(
                 json.dumps({"error": "Server configuration error"}),
@@ -43,15 +40,22 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 mimetype="application/json"
             )
 
-        # Connect to IoT Hub using the recommended class method
         registry_manager = IoTHubRegistryManager.from_connection_string(connection_string)
         
-        # SIMPLIFIED: Invoke the method directly with its name and payload
-        response = registry_manager.invoke_device_method(
-            device_id, method_name, payload
-        )
+        # THIS IS THE KEY CHANGE FOR THE LEGACY SDK
+        # The method name and payload must be in a single dictionary.
+        method_payload = {
+            "methodName": method_name,
+            "payload": payload
+            # Note: Timeout is not passed here in this version
+        }
+        
+        # The function now receives the correct number of arguments:
+        # 1. self (implicit)
+        # 2. device_id
+        # 3. method_payload
+        response = registry_manager.invoke_device_method(device_id, method_payload)
 
-        # Return IoT Hub response back to caller
         return func.HttpResponse(
             json.dumps({
                 "status": "success",
@@ -63,7 +67,6 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         )
 
     except Exception as e:
-        # Logs full traceback to App Insights for better debugging
         logging.exception("An unexpected error occurred while sending command")
         return func.HttpResponse(
             json.dumps({
