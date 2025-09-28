@@ -2,5 +2,8 @@ azure-functions
 azure-identity
 azure-eventhub
 azure-data-tables
-azure-iot-hub
+#azure-iot-hub
+azure-iot-hub-service-client
+
+
 
