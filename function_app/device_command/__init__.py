@@ -1,83 +1,81 @@
-# Assuming your function is in: /home/site/wwwroot/device_command/__init__.py
-
 import logging
 import json
 import os
-from azure.iot.hub import IoTHubRegistryManager
-# 💡 IMPORT THE NECESSARY MODEL from the SDK
-from azure.iot.hub.models import CloudToDeviceMethod 
+import azure.functions as func
 
-# --- Configuration ---
-# Get your IoT Hub connection string from environment variables
-IOT_HUB_CONN_STR = os.environ.get("AzureWebJobsIoTHubConnectionString") 
-DEVICE_ID = "SimDevice01"  # Replace with the actual device ID
+# IMPORTING THE MODERN V2 CLIENT
+from azure.iot.hub import IoTHubServiceClient
 
-# Initialize the Registry Manager outside the main function for better performance
-try:
-    # This assumes you have the IOT_HUB_CONN_STR set up
-    registry_manager = IoTHubRegistryManager.from_connection_string(IOT_HUB_CONN_STR)
-except Exception as e:
-    logging.error(f"Error initializing Registry Manager: {e}")
-    # Handle this in a real app, maybe raise an exception or set manager to None
+def main(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info("Device command function triggered.")
 
-
-def main(req: object) -> dict:
-    """
-    An Azure Function to invoke a direct method on an IoT Edge/Hub device.
-    """
-    logging.info('Device command function triggered.')
-    
     try:
-        # --- 1. Extract the method name and payload from the HTTP request body ---
-        # The exact way you parse 'req' depends on your Function trigger type (e.g., HTTP, Timer)
-        # For an HTTP trigger, you'd typically get the body like this:
-        req_body = req.get_json()
-        device_id = req_body.get('deviceId', DEVICE_ID)
-        method_name = req_body.get('methodName', 'defaultMethod') 
-        command_payload_dict = req_body.get('payload', {}) # The dict of arguments for the device
+        # Parse request JSON safely
+        try:
+            body = req.get_json()
+        except ValueError:
+            return func.HttpResponse(
+                json.dumps({"error": "Invalid JSON body"}),
+                status_code=400,
+                mimetype="application/json"
+            )
+
+        device_id = body.get("deviceId")
+        method_name = body.get("commandName")
+        payload = body.get("payload", {})
+        timeout = body.get("timeout", 30)
+
+        if not device_id or not method_name:
+            return func.HttpResponse(
+                json.dumps({"error": "deviceId and commandName are required"}),
+                status_code=400,
+                mimetype="application/json"
+            )
+
+        connection_string = os.getenv("IOTHUB_CONNECTION")
+        if not connection_string:
+            logging.error("IOTHUB_CONNECTION not set") 
+            return func.HttpResponse(
+                json.dumps({"error": "Server configuration error"}),
+                status_code=500,
+                mimetype="application/json"
+            )
+
+        # USING THE MODERN V2 CLIENT
+        service_client = IoTHubServiceClient.from_connection_string(connection_string)
         
-        # --- 2. 💡 THE FIX: Create the correct SDK object ---
-        # The registry_manager.invoke_device_method function expects an object 
-        # from the SDK, not a raw Python dictionary.
-        
-        method_payload = CloudToDeviceMethod(
-            method_name=method_name,
-            payload=command_payload_dict,
-            # Set a reasonable timeout for the device to respond
-            response_timeout_in_seconds=30 
+        # The modern client has a clean, stable method signature
+        response = service_client.invoke_device_method(
+            device_id=device_id, 
+            direct_method_request={
+                "method_name": method_name,
+                "payload": payload,
+                "response_timeout_in_seconds": timeout
+            }
         )
 
-        # --- 3. Invoke the Device Method ---
-        logging.info(f"Invoking method '{method_name}' on device '{device_id}'...")
-        
-        # 💡 This call now succeeds because method_payload is a CloudToDeviceMethod object
-        response = registry_manager.invoke_device_method(device_id, method_payload)
+        # Always close the client when you're done
+        service_client.shutdown()
 
-        # --- 4. Process the response ---
-        if response and response.status in [200, 201]:
-            logging.info(f"Command successful. Status: {response.status}")
-            return {
-                "status": "Success",
+        return func.HttpResponse(
+            json.dumps({
+                "status": "success",
+                "deviceId": device_id,
                 "methodResponse": response.payload
-            }
-        else:
-            logging.error(f"Command failed. Status: {response.status}, Error: {response.payload}")
-            return {
-                "status": "Failure",
-                "statusCode": response.status,
-                "error": response.payload
-            }
-
-    except AttributeError as e:
-        # This catch is for the original error if it happened somewhere else, 
-        # but the fix above should prevent it in the invoke_device_method call.
-        logging.error(f"An expected object attribute error occurred: {e}")
-        return {"status": "Failure", "error": "Invalid payload format sent to SDK.", "details": str(e)}
+            }),
+            status_code=response.status,
+            mimetype="application/json"
+        )
 
     except Exception as e:
-        logging.error(f"An unexpected error occurred while sending command: {e}")
-        # The traceback shows this logging line:
-        # 2025-09-28T15:50:41Z   [Error]   An unexpected error occurred while sending command
-        return {"status": "Failure", "error": "Internal server error.", "details": str(e)}
-
-# Note: You also need a 'function.json' file to define your function's trigger and bindings.
+        logging.exception("An unexpected error occurred while sending command")
+        if 'service_client' in locals():
+            service_client.shutdown() # Ensure client is shut down on error
+        return func.HttpResponse(
+            json.dumps({
+                "status": "failed",
+                "error": str(e)
+            }),
+            status_code=500,
+            mimetype="application/json"
+        )
