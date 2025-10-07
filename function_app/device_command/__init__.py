@@ -4,11 +4,12 @@ import os
 import requests
 import azure.functions as func
 
-# Import the library for Azure Managed Identity authentication
-from azure.identity import DefaultAzureCredential
+# CHANGE 1: Import the specific ManagedIdentityCredential instead of the default
+from azure.identity import ManagedIdentityCredential
+from azure.core.exceptions import HttpResponseError
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info("Device command function triggered (Managed Identity - Final).")
+    logging.info("Device command function triggered (Specific Managed Identity).")
 
     device_id = req.route_params.get('deviceId')
     
@@ -30,16 +31,16 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         if not method_name:
             return func.HttpResponse(json.dumps({"error": "commandName is required"}), status_code=400)
 
-        logging.info(f"Authenticating using Managed Identity to call '{method_name}' on '{device_id}'.")
+        logging.info(f"Authenticating using specific Managed Identity to call '{method_name}' on '{device_id}'.")
 
-        # 1. Get a credential object. In Azure, this automatically uses the function's Managed Identity.
-        credential = DefaultAzureCredential()
+        # CHANGE 2: Create an instance of ManagedIdentityCredential directly
+        credential = ManagedIdentityCredential()
 
-        # 2. Get an OAuth 2.0 access token for the CORRECT IoT Hub resource scope.
+        # Get an OAuth 2.0 access token for the correct IoT Hub resource scope.
         token_info = credential.get_token("https://devices.azure.net/.default")
         access_token = token_info.token
 
-        # 3. Prepare the REST API call
+        # Prepare the REST API call
         api_version = "2021-04-12"
         rest_api_url = f"https://{hostname}/twins/{device_id}/methods?api-version={api_version}"
         
@@ -54,7 +55,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             "responseTimeoutInSeconds": 30
         }
 
-        # 4. Make the authenticated request
+        # Make the authenticated request
         response = requests.post(rest_api_url, headers=headers, json=rest_api_body)
         response.raise_for_status() # Raise an exception for HTTP errors (4xx or 5xx)
 
