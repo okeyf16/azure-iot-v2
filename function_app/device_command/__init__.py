@@ -8,7 +8,7 @@ import azure.functions as func
 from azure.identity import DefaultAzureCredential
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info("Device command function triggered (Managed Identity).")
+    logging.info("Device command function triggered (Managed Identity - Final).")
 
     device_id = req.route_params.get('deviceId')
     
@@ -17,7 +17,6 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
     try:
         # Get the IoT Hub hostname from an application setting
-        # Note: We are NO LONGER using the full connection string
         hostname = os.getenv("IOTHUB_HOSTNAME")
         if not hostname:
             logging.error("IOTHUB_HOSTNAME application setting is not set.")
@@ -36,8 +35,8 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         # 1. Get a credential object. In Azure, this automatically uses the function's Managed Identity.
         credential = DefaultAzureCredential()
 
-        # 2. Get an OAuth 2.0 access token for the IoT Hub service.
-        token_info = credential.get_token("https://iothub.azure.net/.default")
+        # 2. Get an OAuth 2.0 access token for the CORRECT IoT Hub resource scope.
+        token_info = credential.get_token("https://devices.azure.net/.default")
         access_token = token_info.token
 
         # 3. Prepare the REST API call
