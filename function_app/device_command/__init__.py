@@ -10,7 +10,7 @@ from urllib.parse import quote_plus, urlencode
 
 import azure.functions as func
 
-# Helper function to generate the necessary security token
+# Helper function to generate the necessary security token (No changes needed here)
 def generate_sas_token(uri, key, policy_name, expiry=3600):
     ttl = time.time() + expiry
     sign_key = "%s\n%d" % ((quote_plus(uri)), int(ttl))
@@ -27,8 +27,15 @@ def generate_sas_token(uri, key, policy_name, expiry=3600):
 
     return 'SharedAccessSignature ' + urlencode(raw_token)
 
+
 def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info("Device command function triggered (REST API).")
+
+    # --- CHANGE #1: Get device_id from the URL route parameters ---
+    device_id = req.route_params.get('deviceId')
+    
+    if not device_id:
+        return func.HttpResponse(json.dumps({"error": "deviceId must be provided in the URL path, e.g., /api/command/my-device"}), status_code=400, mimetype="application/json")
 
     try:
         # Parse request JSON safely
@@ -37,20 +44,20 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         except ValueError:
             return func.HttpResponse(json.dumps({"error": "Invalid JSON body"}), status_code=400, mimetype="application/json")
 
-        device_id = body.get("deviceId")
+        # --- CHANGE #2: We no longer get device_id from the body ---
         method_name = body.get("commandName")
         payload = body.get("payload", {})
         timeout = body.get("timeout", 30)
 
-        if not device_id or not method_name:
-            return func.HttpResponse(json.dumps({"error": "deviceId and commandName are required"}), status_code=400, mimetype="application/json")
+        if not method_name:
+            return func.HttpResponse(json.dumps({"error": "commandName is required in the JSON body"}), status_code=400, mimetype="application/json")
 
         connection_string = os.getenv("IOTHUB_CONNECTION")
         if not connection_string:
             logging.error("IOTHUB_CONNECTION not set")
             return func.HttpResponse(json.dumps({"error": "Server configuration error"}), status_code=500, mimetype="application/json")
 
-        # Parse the connection string to get components
+        # Parse the connection string (no changes here)
         parts = {p[0]: p[1] for p in [s.split('=', 1) for s in connection_string.split(';')]}
         hostname = parts.get("HostName")
         policy_name = parts.get("SharedAccessKeyName")
@@ -60,7 +67,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
              logging.error("Connection string is missing required parts (HostName, SharedAccessKeyName, SharedAccessKey)")
              return func.HttpResponse(json.dumps({"error": "Server configuration error"}), status_code=500, mimetype="application/json")
 
-        # --- REST API LOGIC ---
+        # REST API LOGIC (no changes here)
         api_version = "2021-04-12"
         rest_api_url = f"https://{hostname}/twins/{device_id}/methods?api-version={api_version}"
         
@@ -77,9 +84,8 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             "responseTimeoutInSeconds": timeout
         }
 
-        # Make the direct HTTP request to IoT Hub
         response = requests.post(rest_api_url, headers=headers, json=rest_api_body)
-        response.raise_for_status() # Raise an exception for HTTP errors
+        response.raise_for_status()
 
         response_json = response.json()
         
@@ -91,7 +97,6 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
     except requests.exceptions.HTTPError as e:
         logging.exception("HTTP error occurred while calling IoT Hub REST API")
-        # Try to return the specific error from IoT Hub if possible
         error_body = e.response.text
         return func.HttpResponse(
             body=error_body,
