@@ -3,12 +3,12 @@ import json
 import os
 import azure.functions as func
 
-# Import the official Azure IoT Hub SDK
-from azure.iot.hub import IoTHubRegistryManager
-from azure.iot.hub.models import CloudToDeviceMethod
+# Import the official Azure IoT Hub SDK classes with the CORRECT import paths
+from azure.iot.hub import IoTHubRegistryManager, CloudToDeviceMethod
+from azure.core.exceptions import HttpResponseError
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info("Device command function triggered (SDK).")
+    logging.info("Device command function triggered (SDK - Corrected).")
 
     device_id = req.route_params.get('deviceId')
     
@@ -20,6 +20,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         )
 
     try:
+        # Get the request body
         try:
             body = req.get_json()
         except ValueError:
@@ -39,6 +40,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 mimetype="application/json"
             )
 
+        # Get the connection string from application settings
         connection_string = os.getenv("IOTHUB_CONNECTION")
         if not connection_string:
             logging.error("IOTHUB_CONNECTION not set")
@@ -48,34 +50,46 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 mimetype="application/json"
             )
 
-        # The SDK handles everything from here
-        logging.info(f"Invoking method '{method_name}' on device '{device_id}' using SDK.")
+        logging.info(f"Invoking method '{method_name}' on device '{device_id}'.")
 
-        # 1. Create a client from the connection string. The SDK handles all parsing and auth.
+        # Create an IoT Hub client from the connection string
         registry_manager = IoTHubRegistryManager.from_connection_string(connection_string)
 
-        # 2. Create the direct method payload
-        device_method = CloudToDeviceMethod(method_name=method_name, payload=payload)
+        # Create the direct method payload using the correctly imported class
+        device_method = CloudToDeviceMethod(method_name=method_name, payload=payload, response_timeout_in_seconds=30)
 
-        # 3. Invoke the method. The SDK builds the request, creates the SAS token, and makes the call.
+        # Invoke the method on the device
         result = registry_manager.invoke_device_method(device_id, device_method)
 
         logging.info(f"Successfully invoked method. Device responded with status: {result.status}")
         
-        # 4. Return the successful response from the device
+        # Return the successful response from the device
         return func.HttpResponse(
             body=json.dumps(result.payload),
             status_code=result.status,
             mimetype="application/json"
         )
 
-    except Exception as e:
-        # The SDK will raise specific exceptions, which we can log.
-        logging.error(f"An unexpected error occurred: {e}", exc_info=True)
-        # Attempt to create a more helpful error message
-        error_details = { "error": "Failed to invoke device method.", "details": str(e) }
+    except HttpResponseError as e:
+        # This will catch errors from IoT Hub, such as 404 if the device is offline
+        logging.error(f"IoT Hub returned an error: {e.reason}. Status: {e.status_code}", exc_info=True)
+        error_details = {
+            "error": "Failed to invoke device method via IoT Hub.",
+            "details": e.reason,
+            "status_code": e.status_code
+        }
         return func.HttpResponse(
             body=json.dumps(error_details),
-            status_code=500, # Internal Server Error for failures
+            status_code=e.status_code,
+            mimetype="application/json"
+        )
+        
+    except Exception as e:
+        # This will catch any other unexpected errors
+        logging.error(f"An unexpected error occurred: {e}", exc_info=True)
+        error_details = { "error": "An internal server error occurred.", "details": str(e) }
+        return func.HttpResponse(
+            body=json.dumps(error_details),
+            status_code=500,
             mimetype="application/json"
         )
