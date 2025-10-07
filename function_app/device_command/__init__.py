@@ -42,9 +42,10 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
         # ✅ Use Managed Identity to authenticate with IoT Hub
         credential = ManagedIdentityCredential()
+        token = credential.get_token("https://iothubs.azure.net/.default").token
 
-        # IoT Hub SDK automatically uses AAD token from Managed Identity
-        registry_manager = IoTHubRegistryManager(host=hostname, credential=credential)
+        # Initialize RegistryManager using token directly
+        registry_manager = IoTHubRegistryManager.from_token(hostname, token)
 
         # Build method payload
         direct_method = {
