@@ -45,7 +45,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         token = credential.get_token("https://iothubs.azure.net/.default").token
 
         # Initialize RegistryManager using token directly
-        registry_manager = IoTHubRegistryManager.from_token(hostname, token)
+        registry_manager = IoTHubRegistryManager.from_token_credential(hostname, token)
 
         # Build method payload
         direct_method = {
