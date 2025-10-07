@@ -3,12 +3,13 @@ import json
 import os
 import azure.functions as func
 
-# Import the official Azure IoT Hub SDK classes with the CORRECT import paths
-from azure.iot.hub import IoTHubRegistryManager, CloudToDeviceMethod
+# Import the official Azure IoT Hub SDK classes with the DEFINITIVELY CORRECT import paths
+from azure.iot.hub import IoTHubRegistryManager
+from azure.iot.hub.models import CloudToDeviceMethod
 from azure.core.exceptions import HttpResponseError
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info("Device command function triggered (SDK - Corrected).")
+    logging.info("Device command function triggered (SDK - Final).")
 
     device_id = req.route_params.get('deviceId')
     
