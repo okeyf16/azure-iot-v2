@@ -37,7 +37,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         credential = ManagedIdentityCredential()
 
         # Get an OAuth 2.0 access token for the correct IoT Hub resource scope.
-        token_info = credential.get_token("https://devices.azure.net/.default")
+        token_info = credential.get_token("https://management.azure.net/.default")
         access_token = token_info.token
 
         # Prepare the REST API call
