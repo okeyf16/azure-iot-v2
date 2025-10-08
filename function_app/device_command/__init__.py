@@ -28,21 +28,17 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         if not method_name:
             return func.HttpResponse(json.dumps({"error": "commandName is required"}), status_code=400)
 
-        logging.info(f"Authenticating with Managed Identity to invoke '{method_name}' on device '{device_id}'.")
+        logging.info(f"Authenticating using Managed Identity to call '{method_name}' on '{device_id}'.")
 
-        # 1. Get a credential object for the function's Managed Identity.
         credential = ManagedIdentityCredential()
 
-        # 2. Get an OAuth 2.0 access token for the CORRECT IoT Hub data service.
         token_info = credential.get_token("https://devices.azure.net/.default")
         access_token = token_info.token
         logging.info("Successfully acquired authentication token.")
 
-        # 3. Prepare the REST API call.
         api_version = "2021-04-12"
         rest_api_url = f"https://{hostname}/twins/{device_id}/methods?api-version={api_version}"
         
-        # 4. Use the token in the "Authorization" header.
         headers = {
             "Authorization": f"Bearer {access_token}",
             "Content-Type": "application/json"
@@ -54,7 +50,6 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             "responseTimeoutInSeconds": 30
         }
 
-        # 5. Make the authenticated request.
         response = requests.post(rest_api_url, headers=headers, json=rest_api_body)
         response.raise_for_status()
 
