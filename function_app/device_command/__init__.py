@@ -40,12 +40,12 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
         logging.info(f"Authenticating with Managed Identity to invoke '{method_name}' on device '{device_id}'.")
 
-        # ✅ Use Managed Identity to authenticate with IoT Hub
+        # +++ THIS IS THE CORRECTED CODE BLOCK +++
+        # Create the credential object. Do NOT call get_token() yourself.
         credential = ManagedIdentityCredential()
-        token = credential.get_token("https://iothubs.azure.net/.default").token
-
-        # Initialize RegistryManager using token directly
-        registry_manager = IoTHubRegistryManager.from_token(hostname, token)
+        # Pass the hostname and the entire credential object to the constructor.
+        registry_manager = IoTHubRegistryManager(hostname=hostname, credential=credential)
+        # +++ END OF CORRECTION +++
 
         # Build method payload
         direct_method = {
