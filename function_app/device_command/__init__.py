@@ -2,10 +2,8 @@ import logging
 import json
 import os
 import azure.functions as func
+import requests
 from azure.identity import ManagedIdentityCredential
-from azure.iot.hub import IoTHubRegistryManager
-from azure.core.exceptions import HttpResponseError
-
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info("Device command function triggered (Managed Identity).")
@@ -13,8 +11,9 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     device_id = req.route_params.get('deviceId')
     if not device_id:
         return func.HttpResponse(
-            json.dumps({"error": "deviceId must be provided in the URL"}),
-            status_code=400
+            '{"error": "deviceId must be provided in the URL"}',
+            status_code=400,
+            mimetype="application/json"
         )
 
     try:
@@ -23,58 +22,67 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         if not hostname:
             logging.error("IOTHUB_HOSTNAME application setting is not set.")
             return func.HttpResponse(
-                json.dumps({"error": "Server configuration error"}),
-                status_code=500
+                '{"error": "Server configuration error"}',
+                status_code=500,
+                mimetype="application/json"
             )
 
         # Parse incoming request
-        body = req.get_json()
-        method_name = body.get("commandName")
-        payload = body.get("payload", {})
+        req_body = req.get_json()
+        method_name = req_body.get("commandName")
+        payload = req_body.get("payload", {})
 
         if not method_name:
             return func.HttpResponse(
-                json.dumps({"error": "commandName is required"}),
-                status_code=400
+                '{"error": "commandName is required"}',
+                status_code=400,
+                mimetype="application/json"
             )
 
         logging.info(f"Authenticating with Managed Identity to invoke '{method_name}' on device '{device_id}'.")
 
-        # +++ THIS IS THE CORRECTED CODE BLOCK +++
-        # Create the credential object
+        # 1. Get an access token for IoT Hub using Managed Identity
         credential = ManagedIdentityCredential()
-        # Use the from_credential() method to initialize the manager
-        registry_manager = IoTHubRegistryManager.from_credential(
-            hostname=hostname,
-            credential=credential
-        )
-        # +++ END OF CORRECTION +++
+        # Note the scope for service-level APIs
+        token_info = credential.get_token("https://iothubs.azure.net/.default")
+        token = token_info.token
 
-        # Build method payload
-        direct_method = {
+        # 2. Construct the REST API URL for invoking a direct method
+        api_version = "2021-04-12"
+        rest_api_url = f"https://{hostname}/twins/{device_id}/methods?api-version={api_version}"
+
+        # 3. Prepare the request headers and body
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json"
+        }
+        
+        body = {
             "methodName": method_name,
             "payload": payload,
             "responseTimeoutInSeconds": 30
         }
 
-        logging.info(f"Invoking method {method_name} on device {device_id}...")
-        response = registry_manager.invoke_device_method(device_id, direct_method)
+        logging.info(f"Invoking method '{method_name}' on device '{device_id}' via REST API...")
+        
+        # 4. Make the POST request
+        response = requests.post(rest_api_url, headers=headers, json=body)
+        response.raise_for_status()  # This will raise an exception for HTTP error codes (4xx or 5xx)
 
-        logging.info(f"Device method invoked successfully. Response: {response}")
+        response_json = response.json()
+        logging.info(f"Device method invoked successfully. Response: {response_json}")
+        
         return func.HttpResponse(
-            json.dumps({
-                "status": response.status,
-                "payload": response.payload
-            }),
-            status_code=200,
+            json.dumps(response_json),
+            status_code=response.status_code,
             mimetype="application/json"
         )
 
-    except HttpResponseError as hre:
-        logging.error(f"HTTP error from IoT Hub: {hre}", exc_info=True)
+    except requests.exceptions.HTTPError as hre:
+        logging.error(f"HTTP error from IoT Hub REST API: {hre.response.text}", exc_info=True)
         return func.HttpResponse(
-            json.dumps({"error": "IoT Hub returned an error", "details": str(hre)}),
-            status_code=hre.status_code if hasattr(hre, "status_code") else 500
+            json.dumps({"error": "IoT Hub returned an error", "details": hre.response.json()}),
+            status_code=hre.response.status_code
         )
     except Exception as e:
         logging.error(f"An internal error occurred: {e}", exc_info=True)
