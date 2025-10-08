@@ -41,10 +41,13 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         logging.info(f"Authenticating with Managed Identity to invoke '{method_name}' on device '{device_id}'.")
 
         # +++ THIS IS THE CORRECTED CODE BLOCK +++
-        # Create the credential object. Do NOT call get_token() yourself.
+        # Create the credential object
         credential = ManagedIdentityCredential()
-        # Pass the hostname and the entire credential object to the constructor.
-        registry_manager = IoTHubRegistryManager(hostname=hostname, credential=credential)
+        # Use the from_credential() method to initialize the manager
+        registry_manager = IoTHubRegistryManager.from_credential(
+            hostname=hostname,
+            credential=credential
+        )
         # +++ END OF CORRECTION +++
 
         # Build method payload
